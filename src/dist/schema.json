@@ -1,0 +1,25 @@
+[
+{
+    "Domain": "domain",
+    "subDomain": "false",
+    "Indexed": "false",
+    "pages": [
+        "someid",
+        "someid"
+    ],
+    "subDomains": [
+        "some subdomain",
+        "some subdomain"
+    ],
+    "in_scan": "false",
+    "last scan": "date"
+}
+]
+
+
+[
+    "url", "url",
+    "domain", "domain",
+    "scraped", "false",
+    "urls": []
+]
