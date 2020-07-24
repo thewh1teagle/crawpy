@@ -2,7 +2,6 @@
 {
     "Domain": "domain",
     "subDomain": "false",
-    "Indexed": "false",
     "pages": [
         "someid",
         "someid"
@@ -17,9 +16,12 @@
 ]
 
 
-[
+{
     "url", "url",
     "domain", "domain",
     "scraped", "false",
+    "indexed": "false",
+    "depth": "1"
     "urls": []
-]
+}
+

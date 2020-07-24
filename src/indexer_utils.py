@@ -27,16 +27,21 @@ class Indexer_utils:
             extracted_links.append(link['href'])
         return extracted_links
     @staticmethod
-    def filter_internal_links(domain, links):
+    def filter_internal_links(domain, links, root_url):
         internal_links = []
         for link in links:
             if domain in link:
                 internal_links.append(link)
+            elif link.startswith("/"):
+                if not link.endswith("/"): link += "/"
+                internal_links.append(
+                    root_url + link
+                )
         logger.debug(f"found {len(internal_links)} internal links in {domain}")
         return internal_links
     @staticmethod
-    def extract_internal_links(domain, html):
+    def extract_internal_links(domain, html, root_url):
         links = Indexer_utils.extract_links(html)
         logger.debug(f"found {len(links)} links in {domain}")
-        internal_links = Indexer_utils.filter_internal_links(domain, links)
+        internal_links = Indexer_utils.filter_internal_links(domain, links, root_url)
         return internal_links

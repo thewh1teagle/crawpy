@@ -2,7 +2,8 @@ from Storage import BaseStorage
 from Indexer import Indexer
 
 def main():
-    DOMAIN = "walla.co.il"
+    MAX_DEPTH = 2
+    DOMAIN = "kan.org.il"
     storage = BaseStorage()
     indexer = Indexer(storage, DOMAIN)
     

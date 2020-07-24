@@ -1,5 +1,8 @@
 import pymongo
 from loguru import logger
+import numpy as np
+from time import sleep
+
 
 class BaseStorage:
     "Manage the DB using mongodb as database"
@@ -71,18 +74,47 @@ class BaseStorage:
         self.domain_col.insert({
             "domain": domain,
             "isSubDomain": is_sub_domain,
-            "pages": pages,
             "subDomains": sub_domains,
             "in_progress": in_scan,
             "last_scan": last_scan
         })
 
     
-    def insert_page(self, url, domain, scraped=False, urls=None):
-        self.pages_col.insert({
-            "url": url,
-            "domain": domain,
-            "scraped": False,
-            "indexed": False,
-            "urls": urls
-        })
+    def insert_page(self, url, domain, depth, scraped=False, urls=None):
+        query = {"url": url}
+        result = self.pages_col.find_one(query)
+        logger.debug(result)
+        
+        if result:
+            logger.debug("page existed")
+            logger.debug(result)
+            input()
+        else:
+            self.pages_col.insert({
+                "url": url,
+                "domain": domain,
+                "depth": depth,
+                "scraped": False,
+                "indexed": False,
+                "urls": urls
+            })
+            
+            
+
+    def get_unindexed_page(self, domain, max_depth):
+        query = {"domain": domain, "indexed": False, "depth": {'$lte': max_depth}}        
+        result = self.pages_col.find_one(query)
+        logger.debug(result)
+        if not result:
+            sleep(2)
+        return result
+
+    def get_unindexed_domain(self):
+        query = {"indexed": False}
+        result = self.domain_col.find(query).limit(1)
+        if result:
+            logger.debug(result)
+        else:
+            logger.debug("Not found any unindexed domain in DB.")
+            sleep(2)
+        return result
