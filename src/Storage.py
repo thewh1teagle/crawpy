@@ -80,8 +80,23 @@ class BaseStorage:
         })
 
     
+    def valid_page(self, url):
+        invalid_extensions = [
+            "img",
+            "stl",
+            "jpg",
+            "mp4",
+            "mp3",
+            "jpeg"
+        ]
+
+        return all([
+                not url.endswith(extension) for extension in invalid_extensions
+            ])
+
+
     def insert_page(self, url, domain, depth, scraped=False, urls=None):
-        if self.pages_col.find({"url": url}).count() <= 0:
+        if self.pages_col.find({"url": url}).count() <= 0 and self.valid_page(url):
             logger.debug(f"inserting page {url}")
             self.pages_col.insert({
                 "url": url,

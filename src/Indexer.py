@@ -2,7 +2,7 @@ from Storage import BaseStorage
 from Requester import Requester
 from loguru import logger
 from bs4 import BeautifulSoup
-from indexer_utils import Indexer_utils
+from utils.indexer_utils import Indexer_utils
 from time import sleep
 
 class Indexer(Requester):
@@ -28,6 +28,14 @@ class Indexer(Requester):
         self.visit_page(url)
         while True:
             url = self.storage.get_unindexed_page(self.DOMAIN, self.MAX_DEPTH)
+            if not url:
+                logger.debug(f"Scan finished. no urls can be found at depth {self.MAX_DEPTH}")
+                break
+            if url['depth'] > self.DEPTH:
+                logger.debug(f"moving into depth {url['depth']}")
+                self.DEPTH = url['depth']
+                sleep(4)
+
             logger.debug(f"unindexed url: {url}")
             if url:
                 self.visit_page(url['url'])
@@ -39,7 +47,7 @@ class Indexer(Requester):
             internal_links = Indexer_utils.extract_internal_links(self.DOMAIN, html, url)
             for link in internal_links:
                 logger.debug(f"iter link: {link}")
-                self.storage.insert_page(link, self.DOMAIN, self.DEPTH)
+                self.storage.insert_page(link, self.DOMAIN, self.DEPTH + 1)
         self.storage.pages_col.update_one({"url": url}, { "$set": { "indexed": True } })
 
 
