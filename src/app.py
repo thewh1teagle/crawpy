@@ -3,10 +3,9 @@ from Indexer import Indexer
 from loguru import logger
 
 def main():
-    MAX_DEPTH = 2
     DOMAIN = "smallwebsite.us"
     storage = BaseStorage()
-    indexer = Indexer(storage, DOMAIN, max_depth=MAX_DEPTH)
+    indexer = Indexer(storage, DOMAIN, max_depth=2, workers=5)
     
 if __name__ == '__main__':
     main()
