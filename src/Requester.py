@@ -11,3 +11,4 @@ class Requester:
                 return result.text
         except Exception as e:
             logger.exception(e)
+            raise Exception(e)
