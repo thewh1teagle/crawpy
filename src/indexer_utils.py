@@ -5,7 +5,7 @@ from loguru import logger
 class Indexer_utils:
     @staticmethod
     def fix_url(url):
-        pass    
+        pass
     @staticmethod
     def domain_to_url(DOMAIN):
         if not "http" in DOMAIN:
@@ -35,7 +35,7 @@ class Indexer_utils:
             elif link.startswith("/"):
                 if not link.endswith("/"): link += "/"
                 internal_links.append(
-                    root_url + link
+                    root_url + link[1:]
                 )
         logger.debug(f"found {len(internal_links)} internal links in {domain}")
         return internal_links

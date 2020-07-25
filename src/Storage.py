@@ -81,15 +81,8 @@ class BaseStorage:
 
     
     def insert_page(self, url, domain, depth, scraped=False, urls=None):
-        query = {"url": url}
-        result = self.pages_col.find_one(query)
-        logger.debug(result)
-        
-        if result:
-            logger.debug("page existed")
-            logger.debug(result)
-            input()
-        else:
+        if self.pages_col.find({"url": url}).count() <= 0:
+            logger.debug(f"inserting page {url}")
             self.pages_col.insert({
                 "url": url,
                 "domain": domain,
@@ -99,6 +92,8 @@ class BaseStorage:
                 "urls": urls
             })
             
+        else:
+            logger.debug(f"page {url} exist")
             
 
     def get_unindexed_page(self, domain, max_depth):

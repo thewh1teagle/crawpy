@@ -7,7 +7,5 @@ def main():
     storage = BaseStorage()
     indexer = Indexer(storage, DOMAIN)
     
-
-
 if __name__ == '__main__':
     main()

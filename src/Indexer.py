@@ -3,6 +3,7 @@ from Requester import Requester
 from loguru import logger
 from bs4 import BeautifulSoup
 from indexer_utils import Indexer_utils
+from time import sleep
 
 class Indexer(Requester):
     "Indexing a site domain and saving with base-storage"
@@ -24,10 +25,6 @@ class Indexer(Requester):
         url = Indexer_utils.domain_to_url(self.DOMAIN)
         if self.storage.pages_col.find({"url": url, "indexed": True}).count() > 0:
             url = self.storage.get_unindexed_page(self.DOMAIN, self.MAX_DEPTH)
-        
-        logger.debug(type(url))
-        from time import sleep
-        sleep(2)
         self.visit_page(url)
         while True:
             url = self.storage.get_unindexed_page(self.DOMAIN, self.MAX_DEPTH)
@@ -41,9 +38,8 @@ class Indexer(Requester):
         if html:
             internal_links = Indexer_utils.extract_internal_links(self.DOMAIN, html, url)
             for link in internal_links:
-                logger.debug(f"Inserting page {link}")
-                if self.storage.pages_col.find({"url": link}).count() <= 0:
-                    self.storage.insert_page(url, self.DOMAIN, self.DEPTH)
+                logger.debug(f"iter link: {link}")
+                self.storage.insert_page(link, self.DOMAIN, self.DEPTH)
         self.storage.pages_col.update_one({"url": url}, { "$set": { "indexed": True } })
 
 
