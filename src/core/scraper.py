@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from Storage import BaseStorage
+from storage import BaseStorage
 
 class Scraper(BaseStorage):
     "Asking base-storage for non scraped urls, scraping the content and sending to storage"
@@ -7,3 +7,4 @@ class Scraper(BaseStorage):
         self.html = html
         self.soup = BeautifulSoup(html, features='html.parser')
         
+    

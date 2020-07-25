@@ -40,7 +40,7 @@ def filter_internal_links(domain, links, root_url):
     return internal_links
 
 def extract_internal_links(domain, html, root_url):
-    links = IndexerUtils.extract_links(html)
+    links = extract_links(html)
     logger.info(f"found {len(links)} links in {domain}")
-    internal_links = IndexerUtils.filter_internal_links(domain, links, root_url)
+    internal_links = filter_internal_links(domain, links, root_url)
     return internal_links

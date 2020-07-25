@@ -56,7 +56,7 @@ class BaseStorage:
         logger.info("Connecting to mongodb://{}:{}/".format(DB_HOST, DB_PORT))
         self.mongo_client = pymongo.MongoClient("mongodb://{}:{}/".format(DB_HOST, DB_PORT))
         if self.mongo_client.connect:
-            logger.debug("Connected successfuly to database!")
+            logger.info("Connected successfuly to database!")
 
     
 
