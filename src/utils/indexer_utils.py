@@ -1,8 +1,9 @@
+import re
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
-import re 
 from loguru import logger
-class Indexer_utils:
+
+class IndexerUtils:
     @staticmethod
     def fix_url(url):
         pass
@@ -37,11 +38,11 @@ class Indexer_utils:
                 internal_links.append(
                     root_url + link[1:]
                 )
-        logger.debug(f"found {len(internal_links)} internal links in {domain}")
+        logger.info(f"found {len(internal_links)} internal links in {domain}")
         return internal_links
     @staticmethod
     def extract_internal_links(domain, html, root_url):
         links = Indexer_utils.extract_links(html)
-        logger.debug(f"found {len(links)} links in {domain}")
+        logger.info(f"found {len(links)} links in {domain}")
         internal_links = Indexer_utils.filter_internal_links(domain, links, root_url)
         return internal_links

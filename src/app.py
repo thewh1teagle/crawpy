@@ -3,7 +3,7 @@ from Indexer import Indexer
 from loguru import logger
 
 def main():
-    DOMAIN = "smallwebsite.us"
+    DOMAIN = "kan.org.il"
     storage = BaseStorage()
     indexer = Indexer(storage, DOMAIN, max_depth=2, workers=5)
     

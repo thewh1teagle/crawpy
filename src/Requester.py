@@ -1,9 +1,7 @@
 import requests
 from loguru import logger
-class Requester:
-    def __init__(self):
-        pass
 
+class Requester:
     def request(self, url) -> str:
         try:
             result = requests.get(url)
@@ -12,4 +10,4 @@ class Requester:
             else:
                 return result.text
         except Exception as e:
-            logger.debug(e)
+            logger.exception(e)

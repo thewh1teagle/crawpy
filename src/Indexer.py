@@ -2,18 +2,17 @@ from Storage import BaseStorage
 from Requester import Requester
 from loguru import logger
 from bs4 import BeautifulSoup
-from utils.indexer_utils import Indexer_utils
+from utils.indexer_utils import IndexerUtils
 from time import sleep
 from threading import Thread
+
 class Indexer(Requester):
     "Indexing a site domain and saving with base-storage"
     def __init__(self, BaseStorage: BaseStorage, DOMAIN=None, max_depth=2, workers=3):
         self.storage = BaseStorage
         if DOMAIN is None:
             DOMAIN = self.storage.get_unindexed_domain()
-        self.storage.insert_domain(
-            DOMAIN
-        )
+        self.storage.insert_domain(DOMAIN)
         self.workers = workers
         self.DEPTH = 0
         self.MAX_DEPTH = max_depth
@@ -33,25 +32,25 @@ class Indexer(Requester):
         while True:
             url = self.storage.get_unindexed_page(self.DOMAIN, self.MAX_DEPTH)
             if not url:
-                logger.debug(f"Scan finished. no urls can be found at depth {self.MAX_DEPTH}")
+                logger.info(f"Scan finished. no urls can be found at depth {self.MAX_DEPTH}")
                 break
             if url['depth'] > self.DEPTH:
-                logger.debug(f"moving into depth {url['depth']}")
+                logger.info(f"moving into depth {url['depth']}")
                 self.DEPTH = url['depth']
                 sleep(4)
 
-            logger.debug(f"unindexed url: {url}")
+            logger.info(f"unindexed url: {url}")
             if url:
                 self._visit_page(url['url'])
 
     def _start_workers(self):
-        logger.debug(f"Bootstraping {self.workers} workes.")
+        logger.info(f"Bootstraping {self.workers} workes.")
         for i in range(self.workers - 1):
-            logger.debug(f"Starting worker {i}")
+            logger.info(f"Starting worker {i}")
             Thread(target=self._worker).start()
 
     def _visit_page(self, url):
-        logger.debug(f"visiting page {url}")
+        logger.info(f"visiting page {url}")
         html = self.request(url)
         if html:
             internal_links = Indexer_utils.extract_internal_links(self.DOMAIN, html, url)
