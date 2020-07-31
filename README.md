@@ -11,7 +11,7 @@ python3-pip
 python3-venv
 
 
-# How to install and use
+# How to install 
 
 ## Clone the repo 
 ```git clone 
@@ -30,4 +30,11 @@ pip install -r requirements.txt
 ## Start the app
 ```
 python3 app.py
+```
+
+# How to use
+
+open your browser, and start a scan by navigate into 
+```url
+http://localhost:8000/scan/?domain=<domain>&max_depth=<max-depth(default=2)>&workers=<num of workers(default=5)>
 ```
