@@ -96,8 +96,8 @@ class BaseStorage:
             "jpeg"
         )
 
-        return all(
-            not url.endswith(extension) for extension in invalid_extensions
+        return not any(
+            url.endswith(extension) for extension in invalid_extensions
         )
 
 
