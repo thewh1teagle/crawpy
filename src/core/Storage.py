@@ -2,7 +2,8 @@ import pymongo
 import numpy as np
 from loguru import logger
 from time import sleep
-
+from pymongo.errors import ServerSelectionTimeoutError
+import sys
 
 class BaseStorage:
     "Manage the DB using mongodb as database"
@@ -54,9 +55,14 @@ class BaseStorage:
 
     def _create_connection(self, DB_HOST, DB_PORT, USER, PASSWORD):
         logger.info("Connecting to mongodb://{}:{}/".format(DB_HOST, DB_PORT))
-        self.mongo_client = pymongo.MongoClient("mongodb://{}:{}/".format(DB_HOST, DB_PORT))
-        if self.mongo_client.connect:
-            logger.info("Connected successfuly to database!")
+        self.mongo_client = pymongo.MongoClient("mongodb://{}:{}/".format(DB_HOST, DB_PORT), serverSelectionTimeoutMS=5000)
+        try:
+            info = self.mongo_client.server_info() # Forces a call.
+        except ServerSelectionTimeoutError:
+            logger.error("Mongodb server is down.")
+            sys.exit(1)
+        logger.info("Connected successfuly to mongodb.")
+
 
     
 
