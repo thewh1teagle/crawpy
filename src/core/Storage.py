@@ -3,6 +3,7 @@ import numpy as np
 from loguru import logger
 from time import sleep
 from pymongo.errors import ServerSelectionTimeoutError
+from pymongo import InsertOne, UpdateOne
 import sys
 
 class BaseStorage:
@@ -100,29 +101,50 @@ class BaseStorage:
             url.endswith(extension) for extension in invalid_extensions
         )
 
+    def set_indexed(self, url, indexed=True):
+        self.pages_col.update_one({'url': url}, {"$set": {'indexed': indexed}})
 
-    def insert_page(self, url, domain, depth, scraped=False, urls=None):
-        if self.pages_col.find({"url": url}).count() <= 0 and self.valid_page(url):
-            logger.info(f"inserting page {url}")
-            self.pages_col.insert({
-                "url": url,
-                "domain": domain,
-                "depth": depth,
-                "scraped": False,
-                "indexed": False,
-                "urls": urls
-            })
-            
-        else:
-            logger.info(f"page {url} exist")
-            
-
-    def get_unindexed_page(self, domain, max_depth):
-        query = {"domain": domain, "indexed": False, "depth": {'$lte': max_depth}}        
-        result = self.pages_col.find_one(query)
-        if not result:
-            sleep(2)
+    def insert_pages(self, domain, parent, urls, depth):
+        pages = []
+        for url in urls:
+            pages.append(
+                {"domain": domain, "url": url, "depth": depth, "middleScan": False, "indexed": False}
+            )
+        pages_objects = []
+        for page in pages:
+            pages_objects.append(
+                UpdateOne(
+                    {'url': page['url']}, {"$setOnInsert": page}, upsert=True
+                )
+            )
+        result = self.pages_col.bulk_write(pages_objects)
+        self.set_indexed(parent)
         return result
+
+    def get_unindexed_pages(self, domain, max_depth, limit=10):
+        query = {"domain": domain, "indexed": False, 'middleScan': False, "depth": {'$lte': max_depth}}
+        result = self.pages_col.find(query, limit=limit)
+        result = list(result)
+        if not result:
+            print("No result")
+        else:
+            urls = [page['url'] for page in result]
+            self.set_middle_scan(urls, middle=True)
+            return result
+
+    def set_middle_scan(self, urls, middle=True):
+        updates = []
+        for url in urls:
+            updates.append(
+                UpdateOne({
+                    'url': url
+                    },
+                    {"$set": {'middleScan': middle}}
+                )
+            )
+        result = self.pages_col.bulk_write(updates)
+        return result
+
 
     def get_unindexed_domain(self):
         query = {"indexed": False}

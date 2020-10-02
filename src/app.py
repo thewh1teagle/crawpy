@@ -13,6 +13,7 @@ base_storage = BaseStorage()
 def scan_handler(domain, max_depth, workers):
     max_depth, workers = int(max_depth), int(workers)
     indexer = Indexer(base_storage, domain, max_depth=max_depth, workers=workers)
+    indexer.storage.mongo_client.drop_database('crawler')
 
 @app.route('/scan')
 def scan():

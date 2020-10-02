@@ -10,8 +10,10 @@ from queue import Queue
 class Indexer(Requester):
     "Indexing a site domain and saving with base-storage"
     def __init__(self, BaseStorage: BaseStorage, DOMAIN=None, max_depth=2, workers=3):
+        self.visited_pages = set()
         self.storage = BaseStorage
         self.inserter_queue = Queue()
+        self.indexer_queue = Queue()
         if DOMAIN is None:
             DOMAIN = self.storage.get_unindexed_domain()
         self.storage.insert_domain(DOMAIN)
@@ -23,28 +25,33 @@ class Indexer(Requester):
         sleep(5)
         self._start_indexer_workers()
         
+
+        
     
  
     def _start_index(self, DOMAIN):
         self.DOMAIN = DOMAIN
         url = indexerutils.domain_to_url(self.DOMAIN)
         if self.storage.pages_col.find({"url": url, "indexed": True}).count() > 0:
-            url = self.storage.get_unindexed_page(self.DOMAIN, self.MAX_DEPTH)
+            url = self.storage.get_unindexed_pages(self.DOMAIN, self.MAX_DEPTH, limit=1)
         self._visit_page(url)
         
 
     def indexer_worker(self):
         while True:
-            url = self.storage.get_unindexed_page(self.DOMAIN, self.MAX_DEPTH)
-            if not url:
-                logger.info(f"worker finished his job")
-                break
-            if url['depth'] > self.DEPTH:
-                logger.info(f"moving into depth {url['depth']}")
-                self.DEPTH = url['depth']
+            if self.indexer_queue.empty():
+                pages = self.storage.get_unindexed_pages(self.DOMAIN, self.MAX_DEPTH)
+                if not pages:
+                    logger.info(f"worker finished his job")
+                    break
+                self.indexer_queue.put(pages)
+            pages = self.indexer_queue.get()
+            if pages[0]['depth'] > self.DEPTH:
+                logger.info(f"moving into depth {pages[0]['depth']}")
+                self.DEPTH = pages[0]['depth']
                 sleep(4)
-            if url:
-                self._visit_page(url['url'])
+            for page in pages:
+                self._visit_page(page['url'])
 
     def inserter_worker(self):
         while True:
@@ -59,10 +66,16 @@ class Indexer(Requester):
                 break
 
             page = self.inserter_queue.get()
+            logger.info(f"Inserting urls of page {page['url']} [bulk write]")
+            pages = []  
             for link in page['urls']:
-                logger.info(f'inserting page {link}')
-                self.storage.insert_page(link, page['domain'], page['depth'])
-            self.storage.pages_col.update_one({"url": page['url']}, { "$set": { "indexed": True } })
+                
+                # logger.info(f'inserting page {link}')
+                pages.append({
+                    'domain': page['domain'], 'url': link, 'depth': page['depth'], "indexed": False, "Middle_of_scan": False
+                })
+                # self.storage.insert_page(link, page['domain'], page['depth'])
+            self.storage.insert_pages(page['domain'], page['url'], page['urls'], page['depth'])
 
     def _start_indexer_workers(self):
         workers = []
@@ -83,6 +96,11 @@ class Indexer(Requester):
         Thread(target=self.inserter_worker).start() 
 
     def _visit_page(self, url):
+        logger.info(f'vising page {url}')
+        if url in self.visited_pages:
+            return
+        else:
+            self.visited_pages.add(url)
         logger.info(f"visiting page {url}")
         try:
             html = self.request(url)    
